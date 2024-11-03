@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,17 +19,12 @@ import java.util.List;
 @RestController
 @RequestMapping(path = "/")
 @RequiredArgsConstructor
-public class StateController {
+public class StatsController {
 
     public final StatsClient statsClient;
 
-//    public StateController(StatsClient statsClient) {
-//        this.statsClient = statsClient;
-//    }
-
     @PostMapping("/hit")
     public ResponseEntity<Object> createEndpointHit(@Valid @RequestBody EndpointsHitDto endpointsHitDto) {
-        System.out.println(endpointsHitDto);
         return statsClient.create(endpointsHitDto);
     }
 
@@ -40,7 +34,7 @@ public class StateController {
             @NotNull @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
             @RequestParam(required = false) List<String> uris,
             @RequestParam(defaultValue = "false") boolean unique
-            ) {
+    ) {
         return statsClient.getViewStats(start, end, uris, unique);
     }
 }

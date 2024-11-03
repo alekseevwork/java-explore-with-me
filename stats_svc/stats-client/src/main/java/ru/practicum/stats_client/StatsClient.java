@@ -10,12 +10,14 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.stats_dto.EndpointsHitDto;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
 @Service
 public class StatsClient extends BaseClient {
     private static final String API_PREFIX = "/";
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
     public StatsClient(@Value("${stats-server.url}") String serverUrl, RestTemplateBuilder builder) {
@@ -31,13 +33,20 @@ public class StatsClient extends BaseClient {
         return post("/hit", endpointsHitDto);
     }
 
-    public ResponseEntity<Object> getViewStats(LocalDateTime start, LocalDateTime end, List<String> uries, boolean unique) {
+    public ResponseEntity<Object> getViewStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
+
         Map<String, Object> parameters = Map.of(
-                "start", start,
-                "end", end,
-                "uries", uries,
+                "start", start.format(FORMATTER),
+                "end", end.format(FORMATTER),
                 "unique", unique
         );
-        return get("/stats?start={start}&end={end}&uries={uries}&unique={unique}", parameters);
+
+        if (uris != null && !uris.isEmpty()) {
+            String urisString = String.join(",", uris);
+            parameters.put("uris", urisString);
+            return get("/stats?start={start}&end={end}&uris={uris}&unique={unique}", parameters);
+        }
+
+        return get("/stats?start={start}&end={end}&unique={unique}", parameters);
     }
 }

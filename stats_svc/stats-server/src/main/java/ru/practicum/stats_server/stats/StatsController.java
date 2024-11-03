@@ -1,5 +1,6 @@
-package ru.practicum.stats_server.state;
+package ru.practicum.stats_server.stats;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,20 +14,21 @@ import ru.practicum.stats_dto.ViewStatsDto;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping(path = "/")
-public class StateController {
+public class StatsController {
 
-    public final StateService stateService;
+    public final StatsService statsService;
 
-    public StateController(StateService stateService) {
-        this.stateService = stateService;
+    public StatsController(StatsService stateService) {
+        this.statsService = stateService;
     }
 
     @PostMapping("/hit")
     public void createEndpointHit(@RequestBody EndpointsHitDto endpointsHitDto) {
-        System.out.println(endpointsHitDto);
-        stateService.create(StateMapper.toEndpointsHit(endpointsHitDto));
+        log.info("POST /hit: create endpoint - {}", endpointsHitDto);
+        statsService.create(StatsMapper.toEndpointsHit(endpointsHitDto));
     }
 
     @GetMapping("/stats")
@@ -35,7 +37,12 @@ public class StateController {
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
             @RequestParam(required = false) List<String> uris,
             @RequestParam(defaultValue = "false") boolean unique
-            ) {
-        return StateMapper.toViewStatsDto(stateService.getViewStats(start, end, uris, unique));
+    ) {
+        log.info("GET /stats: getViewStats");
+        log.info("start: {}", start);
+        log.info("end: {}", end);
+        log.info("uris: {}", uris);
+        log.info("unique: {}", unique);
+        return StatsMapper.toViewStatsDto(statsService.getViewStats(start, end, uris, unique));
     }
 }

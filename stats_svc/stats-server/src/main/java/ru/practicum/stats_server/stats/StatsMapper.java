@@ -1,11 +1,13 @@
-package ru.practicum.stats_server.state;
+package ru.practicum.stats_server.stats;
 
 import ru.practicum.stats_dto.EndpointsHitDto;
 import ru.practicum.stats_dto.ViewStatsDto;
+import ru.practicum.stats_server.stats.model.EndpointsHit;
+import ru.practicum.stats_server.stats.model.ViewStats;
 
 import java.util.List;
 
-public class StateMapper {
+public class StatsMapper {
 
     public static EndpointsHit toEndpointsHit(EndpointsHitDto dto) {
         if (dto == null) {
@@ -36,7 +38,7 @@ public class StateMapper {
             return null;
         }
         return viewStats.stream()
-                .map(StateMapper::toViewStatsDto)
+                .map(StatsMapper::toViewStatsDto)
                 .toList();
     }
 }
