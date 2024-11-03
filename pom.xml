@@ -23,7 +23,8 @@
 	</properties>
 
 	<modules>
-		<module>stats_svc</module>
+		<module>stats-svc</module>
+		<module>main-svc</module>
 	</modules>
 
 	<build>

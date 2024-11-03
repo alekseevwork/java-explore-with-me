@@ -1,6 +1,6 @@
 services:
   stats-server:
-    build: stats_svc/stats-server
+    build: stats-svc/stats-server
     image: stats-server
     container_name: stats-server
     ports:
@@ -22,13 +22,26 @@ services:
       - POSTGRES_USER=stats
       - POSTGRES_DB=stats
 
-  stats-client:
-    build: stats_svc/stats-client
-    image: stats-client
-    container_name: stats-client
+  ewm-service:
+    build: main-svc
+    image: main-svc
+    container_name: main-svc
     ports:
       - "8080:8080"
     depends_on:
-      - stats-server
+      - ewm-db
     environment:
-      STATS_SERVER_URL: http://stats-server:9090
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/ewm
+      - SPRING_DATASOURCE_USERNAME=ewm
+      - SPRING_DATASOURCE_PASSWORD=ewm
+      - STATS_SERVER_URI=http://stats-server:9090
+
+  ewm-db:
+    image: postgres:16.1
+    container_name: ewm-db
+    ports:
+      - "6542:5432"
+    environment:
+      - POSTGRES_DB=ewm
+      - POSTGRES_USER=ewm
+      - POSTGRES_PASSWORD=ewm

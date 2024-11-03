@@ -25,10 +25,10 @@ public class ErrorHandler {
         return new ErrorResponse(e.getMessage());
     }
 
-//    @ExceptionHandler
-//    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-//    public ErrorResponse handleInternalError(final Throwable e) {
-//        log.error("Что-то пошло не так {}", e.getMessage());
-//        return new ErrorResponse("Произошла непредвиденная ошибка.");
-//    }
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleInternalError(final Throwable e) {
+        log.error("Что-то пошло не так {}", e.getMessage());
+        return new ErrorResponse("Произошла непредвиденная ошибка.");
+    }
 }
