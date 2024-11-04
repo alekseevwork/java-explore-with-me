@@ -34,7 +34,6 @@ public class StatsServiceImpl implements StatsService {
             log.debug("Dates not valid.");
             throw new ValidationException("Start must be before End and they must not be equal.");
         }
-
         if (unique) {
             if (uris == null || uris.isEmpty()) {
                 return stateRepository.getViewStatsUnique(start, end);
