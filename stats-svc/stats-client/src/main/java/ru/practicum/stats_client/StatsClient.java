@@ -35,18 +35,22 @@ public class StatsClient extends BaseClient {
 
     public ResponseEntity<Object> getViewStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
 
+        String urisString = String.join(",", uris);
+
         Map<String, Object> parameters = Map.of(
                 "start", start.format(FORMATTER),
                 "end", end.format(FORMATTER),
-                "unique", unique
+                "unique", unique,
+                "uris", urisString
         );
-
-        if (uris != null && !uris.isEmpty()) {
-            String urisString = String.join(",", uris);
-            parameters.put("uris", urisString);
-            return get("/stats?start={start}&end={end}&uris={uris}&unique={unique}", parameters);
-        }
-
-        return get("/stats?start={start}&end={end}&unique={unique}", parameters);
+//        if (uris != null && !uris.isEmpty()) {
+//            String urisString = String.join(",", uris);
+//            parameters.put("uris", urisString);
+//            System.out.println(parameters);
+//            return get("/stats?start={start}&end={end}&uris={uris}&unique={unique}", parameters);
+//        }
+//
+//        return get("/stats?start={start}&end={end}&unique={unique}", parameters);
+        return get("/stats?start={start}&end={end}&uris={uris}&unique={unique}", parameters);
     }
 }
