@@ -33,6 +33,7 @@ import ru.practicum.main_svc.user.UserRepository;
 import ru.practicum.stats_client.StatsClient;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -66,6 +67,13 @@ public class EventServiceImp implements EventService {
                 .orElseThrow(() -> new NotFoundException("Category not found"));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
+        if (LocalDateTime.now()
+                .isAfter(LocalDateTime.parse(dto.getEventDate(),
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))) {
+            throw new ValidationException("Event date is past");
+        }
+
+
         if (dto.getPaid() == null) {
             dto.setPaid(false);
         }
@@ -103,12 +111,16 @@ public class EventServiceImp implements EventService {
     @Override
     public EventFullDto updateByUser(Long userId, Long eventId, UpdateEventUserRequest request) {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event not found"));
-        if (request.getParticipantLimit() < 0) {
+        if (request.getParticipantLimit() != null && request.getParticipantLimit() < 0) {
             throw new ValidationException("Participant Limit cannot be less than 0");
         }
         if (event.getState().equals(State.PUBLISHED)) {
             throw new RequestConflictException("No rights to change events with PUBLISHED status");
         }
+        if (request.getEventDate() != null && LocalDateTime.now().isAfter(request.getEventDate())) {
+            throw new ValidationException("Event date is past");
+        }
+
         if (request.getAnnotation() != null) {
             event.setAnnotation(request.getAnnotation());
         }
@@ -154,7 +166,6 @@ public class EventServiceImp implements EventService {
                                             LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
         final JPAQuery<Event> query = new JPAQuery<>(entityManager);
         QEvent event = QEvent.event;
-
         query.from(event);
 
         if (users != null && !users.isEmpty()) {
@@ -182,11 +193,15 @@ public class EventServiceImp implements EventService {
     @Transactional
     @Override
     public EventFullDto updateByAdmin(Long eventId, UpdateEventAdminRequest request) {
+
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event by id - " + eventId + " not found"));
 
         if (!event.getState().equals(State.PENDING)) {
             throw new RequestConflictException("Event state not PENDING");
+        }
+        if (request.getEventDate() != null && LocalDateTime.now().isAfter(request.getEventDate())) {
+            throw new ValidationException("Event date is past");
         }
 
         if (request.getStateAction() != null) {
@@ -238,6 +253,7 @@ public class EventServiceImp implements EventService {
         QEvent event = QEvent.event;
         QRequest request = QRequest.request;
         query.from(event);
+        query.where(event.state.eq(State.PUBLISHED));
 
         if (text != null && !text.isEmpty()) {
             query.where(event.annotation.containsIgnoreCase(text)
@@ -254,6 +270,13 @@ public class EventServiceImp implements EventService {
         }
         if (rangeEnd != null) {
             query.where(event.eventDate.loe(rangeEnd));
+        }
+        if (rangeStart == null && rangeEnd == null) {
+            query.where(event.eventDate.goe(LocalDateTime.now()));
+        }
+
+        if (rangeStart != null && rangeStart.isAfter(rangeEnd)) {
+            throw new ValidationException("Start date cannot be after end");
         }
 
         if (onlyAvailable) {
@@ -322,9 +345,11 @@ public class EventServiceImp implements EventService {
                 .toList();
     }
 
+    @Transactional
     @Override
     public EventRequestStatusUpdateResult updateEventRequestByUser(Long userId, Long eventId,
                                                                    EventRequestStatusUpdateRequest statusUpdateRequest) {
+
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User by id - " + userId + "  not found."));
         Event event = eventRepository.findByInitiatorIdAndId(userId, eventId).orElseThrow(() ->
@@ -334,52 +359,41 @@ public class EventServiceImp implements EventService {
         }
         List<Long> requestIds = statusUpdateRequest.getRequestIds();
         List<Request> updatesRequests = requestRepository.findAllByIdsAndEventId(requestIds, eventId);
-        updatesRequests.getFirst().getEvent().setAnnotation("anno");
-        updatesRequests.getFirst().getEvent().setDescription("disc");
-        log.info("status request now - {}", updatesRequests.getFirst().getStatus());
-        log.info("requestIds - {}", requestIds);
-
-        log.info("updatesRequests - {}", updatesRequests);
 
         long confirmedCount = requestRepository.countAllByEventIdAndStatusIs(eventId, RequestStatus.CONFIRMED);
 
-        log.info("confirmedCount - {}", confirmedCount);
-        log.info("ParticipantLimit - {}", event.getParticipantLimit());
-
-        if (confirmedCount == event.getParticipantLimit()) {
-            throw new ValidationException("Quantity Participant Limit is full");
+        if (confirmedCount >= event.getParticipantLimit()) {
+            throw new RequestConflictException("Quantity Participant Limit is full");
         }
         List<ParticipationRequestDto> confirmedRequests = new ArrayList<>();
         List<ParticipationRequestDto> rejectedRequests = new ArrayList<>();
-
-        log.info("status Update - {}", statusUpdateRequest.getStatus());
 
         if (statusUpdateRequest.getStatus() == RequestStatus.CONFIRMED) {
             for (Request request : updatesRequests) {
                 if (request.getStatus() == RequestStatus.PENDING
                         && confirmedCount <= event.getParticipantLimit()) {
                     confirmedRequests.add(setStatusAndSaveAll(request, RequestStatus.CONFIRMED));
-                    confirmedCount++;
+                    ++confirmedCount;
                 } else {
                     request.setStatus(RequestStatus.REJECTED);
                     rejectedRequests.add(setStatusAndSaveAll(request, RequestStatus.REJECTED));
                 }
             }
-        } else {
+        } else if (statusUpdateRequest.getStatus() == RequestStatus.REJECTED){
             for (Request request : updatesRequests) {
-                if (request.getStatus() == RequestStatus.REJECTED) {
-                    request.setStatus(RequestStatus.REJECTED);
-                    rejectedRequests.add(setStatusAndSaveAll(request, RequestStatus.REJECTED));
-                } else {
+                if (request.getStatus() == RequestStatus.CONFIRMED) {
                     throw new RequestConflictException("State request invalid");
                 }
+                request.setStatus(RequestStatus.REJECTED);
+                rejectedRequests.add(setStatusAndSaveAll(request, RequestStatus.REJECTED));
             }
+        } else {
+            throw new RequestConflictException("State request invalid");
         }
-
         return new EventRequestStatusUpdateResult(confirmedRequests, rejectedRequests);
     }
 
-    private ParticipationRequestDto setStatusAndSaveAll(Request request, final RequestStatus status) {
+    private ParticipationRequestDto setStatusAndSaveAll(Request request, RequestStatus status) {
         request.setStatus(status);
         return RequestMapper.toDto(requestRepository.save(request));
     }

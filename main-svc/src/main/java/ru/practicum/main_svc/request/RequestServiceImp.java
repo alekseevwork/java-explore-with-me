@@ -1,6 +1,5 @@
 package ru.practicum.main_svc.request;
 
-import jakarta.validation.ValidationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.main_svc.error.exception.NotFoundException;
@@ -8,14 +7,11 @@ import ru.practicum.main_svc.error.exception.RequestConflictException;
 import ru.practicum.main_svc.event.Event;
 import ru.practicum.main_svc.event.EventRepository;
 import ru.practicum.main_svc.event.State;
-import ru.practicum.main_svc.request.dto.EventRequestStatusUpdateRequest;
-import ru.practicum.main_svc.request.dto.EventRequestStatusUpdateResult;
 import ru.practicum.main_svc.request.dto.ParticipationRequestDto;
 import ru.practicum.main_svc.user.User;
 import ru.practicum.main_svc.user.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -59,13 +55,19 @@ public class RequestServiceImp implements RequestService {
 
         long confirmedCount = requestRepository.countAllByEventId(eventId);
 
-        if (event.getParticipantLimit() > 0 && confirmedCount >= event.getParticipantLimit()) {
+        if (event.getParticipantLimit() != 0 && event.getParticipantLimit() > 0
+                && confirmedCount >= event.getParticipantLimit()) {
             throw new RequestConflictException("Quantity Participant Limit is full");
         }
 
         request.setRequester(user);
         request.setEvent(event);
-        request.setStatus(RequestStatus.PENDING);
+        if (!event.isRequestModeration() || event.getParticipantLimit() == 0) {
+            request.setStatus(RequestStatus.CONFIRMED);
+        } else {
+            request.setStatus(RequestStatus.PENDING);
+        }
+
 
         return RequestMapper.toDto(requestRepository.save(request));
     }
@@ -79,9 +81,8 @@ public class RequestServiceImp implements RequestService {
         return RequestMapper.toDto(requestRepository.save(request));
     }
 
-
     @Override
-    public ParticipationRequestDto cancelRequest(Long userId, Long requestId ) {
+    public ParticipationRequestDto cancelRequest(Long userId, Long requestId) {
 
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User by id: " + userId + " not found"));

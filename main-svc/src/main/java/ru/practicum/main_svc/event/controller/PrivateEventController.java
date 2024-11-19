@@ -86,11 +86,12 @@ public class PrivateEventController {
     @PatchMapping("/{eventId}/requests")
     @ResponseStatus(HttpStatus.OK)
     public EventRequestStatusUpdateResult updateRequestStatus(
-            @PathVariable @Positive Long userId,
-            @PathVariable @Positive Long eventId,
-            @RequestBody @Valid EventRequestStatusUpdateRequest dto) {
+            @PathVariable Long userId,
+            @PathVariable Long eventId,
+            @Valid @RequestBody EventRequestStatusUpdateRequest dto) {
         log.info("PATCH /users/{userId}/events/{eventId}/requests - updateRequestStatus - userId - {}, eventId - {}",
                 userId, eventId);
+        log.info("Status - userId - {}", dto);
         return eventService.updateEventRequestByUser(userId, eventId, dto);
     }
 }

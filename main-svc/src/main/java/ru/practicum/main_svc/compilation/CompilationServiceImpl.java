@@ -25,7 +25,12 @@ public class CompilationServiceImpl implements CompilationService {
 
     @Override
     public List<CompilationDto> getAll(Boolean pinned, int from, int size) {
-        List<Compilation> compilations = compilationRepository.findAllByPinned(pinned, PageRequest.of(from, size));
+        List<Compilation> compilations;
+        if (pinned != null) {
+            compilations = compilationRepository.findAllByPinned(pinned, PageRequest.of(from, size));
+        } else {
+            compilations = compilationRepository.findAll(PageRequest.of(from, size)).toList();
+        }
         return compilations.stream().map(compilation -> CompilationMapper.toDto(compilation, service)).toList();
     }
 

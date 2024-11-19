@@ -42,7 +42,7 @@ public class CategoryServiceImp implements CategoryService {
     @Override
     public CategoryDto update(Long categoryId, CategoryDto dto) {
         Category category = categoryRepository.findById(categoryId).orElseThrow();
-        if (categoryRepository.findByName(dto.getName()).isPresent()) {
+        if (categoryRepository.findByName(dto.getName()).isPresent() && !category.getName().equals(dto.getName())) {
             throw new CategoryConflictException("Category by name - " + dto.getName() + " already exist");
         }
         category.setName(dto.getName());

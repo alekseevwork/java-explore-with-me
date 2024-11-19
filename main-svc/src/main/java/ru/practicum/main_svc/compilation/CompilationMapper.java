@@ -12,7 +12,7 @@ public class CompilationMapper {
             return null;
         }
         Compilation compilation = new Compilation();
-        compilation.setPinned(dto.getPinned());
+        compilation.setPinned(dto.getPinned() != null ? dto.getPinned() : false);
         compilation.setTitle(dto.getTitle());
         return compilation;
     }

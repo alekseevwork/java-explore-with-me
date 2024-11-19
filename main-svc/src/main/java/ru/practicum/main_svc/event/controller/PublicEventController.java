@@ -57,6 +57,15 @@ public class PublicEventController {
             @RequestParam(required = false, defaultValue = "0") @PositiveOrZero int from,
             @RequestParam(required = false, defaultValue = "10") @Positive int size,
             HttpServletRequest request) {
+        log.info("text - {}", text);
+        log.info("categories - {}", categories);
+        log.info("paid - {}", paid);
+        log.info("rangeStart - {}", rangeStart);
+        log.info("rangeEnd - {}", rangeEnd);
+        log.info("onlyAvailable - {}", onlyAvailable);
+        log.info("sort - {}", sort);
+        log.info("from - {}", from);
+        log.info("size - {}", size);
 
         statsClient.create(EndpointsHitDto.builder()
                 .ip(request.getRemoteAddr())
