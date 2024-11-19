@@ -48,7 +48,7 @@ public class PublicEventController {
     @ResponseStatus(HttpStatus.OK)
     public List<EventShortDto> getByParams(
             @RequestParam(required = false) String text,
-            @RequestParam(required = false) @Positive List<Long> categories,
+            @RequestParam(required = false) List<Long> categories,
             @RequestParam(required = false) Boolean paid,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,

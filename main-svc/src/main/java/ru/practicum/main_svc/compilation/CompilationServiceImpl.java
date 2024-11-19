@@ -39,7 +39,10 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     public CompilationDto create(NewCompilationDto newDto) {
         Compilation newCompilation = CompilationMapper.toCompilation(newDto);
-        return CompilationMapper.toDto(compilationRepository.save(newCompilation), service);
+        List<Event> events = eventRepository.findAllByIds(newDto.getEvents());
+        newCompilation.setEvents(events);
+        Compilation compilation = compilationRepository.save(newCompilation);
+        return CompilationMapper.toDto(compilation, service);
     }
 
     @Transactional

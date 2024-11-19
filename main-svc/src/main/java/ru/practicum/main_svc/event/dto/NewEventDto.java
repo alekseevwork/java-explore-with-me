@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Embedded;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
@@ -33,6 +35,7 @@ public class NewEventDto {
     private Location location;
 
     private Boolean paid;
+    @PositiveOrZero
     private Integer participantLimit;
     private Boolean requestModeration;
 

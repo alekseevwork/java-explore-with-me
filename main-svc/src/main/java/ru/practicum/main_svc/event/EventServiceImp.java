@@ -102,7 +102,10 @@ public class EventServiceImp implements EventService {
     @Transactional
     @Override
     public EventFullDto updateByUser(Long userId, Long eventId, UpdateEventUserRequest request) {
-        Event event = eventRepository.findById(eventId).orElseThrow();
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event not found"));
+        if (request.getParticipantLimit() < 0) {
+            throw new ValidationException("Participant Limit cannot be less than 0");
+        }
         if (event.getState().equals(State.PUBLISHED)) {
             throw new RequestConflictException("No rights to change events with PUBLISHED status");
         }
@@ -158,7 +161,7 @@ public class EventServiceImp implements EventService {
             query.where(event.initiator.id.in(users));
         }
         if (states != null && !states.isEmpty()) {
-            query.where(event.state.in(State.valueOf(String.valueOf(states))));
+            query.where(event.state.in(states.stream().map(State::valueOf).toList()));
         }
         if (categories != null && !categories.isEmpty()) {
             query.where(event.category.id.in(categories));
@@ -234,11 +237,10 @@ public class EventServiceImp implements EventService {
         final JPAQuery<Event> query = new JPAQuery<>(entityManager);
         QEvent event = QEvent.event;
         QRequest request = QRequest.request;
-
         query.from(event);
 
         if (text != null && !text.isEmpty()) {
-            query.where(event.title.containsIgnoreCase(text)
+            query.where(event.annotation.containsIgnoreCase(text)
                     .or(event.description.containsIgnoreCase(text)));
         }
         if (categories != null && !categories.isEmpty()) {
@@ -260,7 +262,6 @@ public class EventServiceImp implements EventService {
                     .having(request.id.count().gt(0))
                     .having(request.event.id.count().loe(event.participantLimit));
         }
-
         List<Event> events = query.offset(from).limit(size).fetch();
         List<EventShortDto> eventsDtoList = events.stream()
                 .map(e -> EventMapper.toShortDto(e, this))
@@ -366,19 +367,25 @@ public class EventServiceImp implements EventService {
             }
         } else {
             for (Request request : updatesRequests) {
-                if (request.getStatus() == RequestStatus.PENDING) {
+                if (request.getStatus() == RequestStatus.REJECTED) {
                     request.setStatus(RequestStatus.REJECTED);
                     rejectedRequests.add(setStatusAndSaveAll(request, RequestStatus.REJECTED));
+                } else {
+                    throw new RequestConflictException("State request invalid");
                 }
             }
         }
-        EventRequestStatusUpdateResult result = new EventRequestStatusUpdateResult(confirmedRequests, rejectedRequests);
-        System.out.println(result);
-        return result;
+
+        return new EventRequestStatusUpdateResult(confirmedRequests, rejectedRequests);
     }
 
     private ParticipationRequestDto setStatusAndSaveAll(Request request, final RequestStatus status) {
         request.setStatus(status);
         return RequestMapper.toDto(requestRepository.save(request));
+    }
+
+    @Override
+    public long getConfirmedRequests(Long eventId) {
+        return requestRepository.countAllByEventIdAndStatusIs(eventId, RequestStatus.CONFIRMED);
     }
 }

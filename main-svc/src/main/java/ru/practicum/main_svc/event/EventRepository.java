@@ -15,8 +15,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     Optional<Event> findByInitiatorIdAndId(Long initiatorId, Long eventId);
 
-    @Query("SELECT e FROM Event e WHERE e.publishedOn = :onlyAvailable")
-    List<Event> findAllByPublic(Boolean onlyAvailable, PageRequest pageRequest);
+//    @Query("SELECT e FROM Event e WHERE e.publishedOn = :onlyAvailable")
+//    List<Event> findAllByPublic(Boolean onlyAvailable, PageRequest pageRequest);
 
     @Query("SELECT e FROM Event e WHERE e.id IN :ids")
     List<Event> findAllByIds(List<Long> ids);

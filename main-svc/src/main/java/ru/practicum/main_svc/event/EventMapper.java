@@ -1,15 +1,21 @@
 package ru.practicum.main_svc.event;
 
+import lombok.experimental.UtilityClass;
 import ru.practicum.main_svc.category.CategoryMapper;
 import ru.practicum.main_svc.event.dto.EventFullDto;
 import ru.practicum.main_svc.event.dto.EventShortDto;
 import ru.practicum.main_svc.event.dto.NewEventDto;
+import ru.practicum.main_svc.request.RequestRepository;
+import ru.practicum.main_svc.request.RequestStatus;
 import ru.practicum.main_svc.user.UserMapper;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+@UtilityClass
 public class EventMapper {
+
+    RequestRepository requestRepository;
 
     public static Event toEvent(NewEventDto dto) {
         if (dto == null) {
@@ -47,6 +53,7 @@ public class EventMapper {
                 .state(event.getState())
                 .title(event.getTitle())
                 .views(service.getViews(event.getId(), event.getCreatedOn()))
+                .confirmedRequests(service.getConfirmedRequests(event.getId()))
                 .build();
     }
 

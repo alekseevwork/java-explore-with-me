@@ -4,8 +4,10 @@ import jakarta.validation.ValidationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.main_svc.error.exception.NotFoundException;
+import ru.practicum.main_svc.error.exception.RequestConflictException;
 import ru.practicum.main_svc.event.Event;
 import ru.practicum.main_svc.event.EventRepository;
+import ru.practicum.main_svc.event.State;
 import ru.practicum.main_svc.request.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.main_svc.request.dto.EventRequestStatusUpdateResult;
 import ru.practicum.main_svc.request.dto.ParticipationRequestDto;
@@ -44,6 +46,22 @@ public class RequestServiceImp implements RequestService {
 
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event not found"));
+        if (requestRepository.findByRequesterIdAndEventId(userId, event.getId()).isPresent()) {
+            throw new RequestConflictException("User already this event");
+        }
+        if (userId.equals(event.getInitiator().getId())) {
+            throw new RequestConflictException("User is initiator event");
+        }
+
+        if (!event.getState().equals(State.PUBLISHED)) {
+            throw new RequestConflictException("Event not published");
+        }
+
+        long confirmedCount = requestRepository.countAllByEventId(eventId);
+
+        if (event.getParticipantLimit() > 0 && confirmedCount >= event.getParticipantLimit()) {
+            throw new RequestConflictException("Quantity Participant Limit is full");
+        }
 
         request.setRequester(user);
         request.setEvent(event);
@@ -54,7 +72,7 @@ public class RequestServiceImp implements RequestService {
 
     @Override
     public ParticipationRequestDto update(Long userId, Long requestId) {
-        userRepository.findById(userId).orElseThrow();
+        userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
         Request request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new NotFoundException("Not requests by id - " + requestId));
         request.setStatus(RequestStatus.CANCELED);

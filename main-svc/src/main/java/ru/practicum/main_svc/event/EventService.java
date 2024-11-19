@@ -39,4 +39,6 @@ public interface EventService {
 
     EventRequestStatusUpdateResult updateEventRequestByUser(
             Long userId, Long eventId, EventRequestStatusUpdateRequest statusUpdateRequest);
+
+    long getConfirmedRequests(Long eventId);
 }
