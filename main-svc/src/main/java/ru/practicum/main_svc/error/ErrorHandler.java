@@ -2,6 +2,7 @@ package ru.practicum.main_svc.error;
 
 import jakarta.validation.ValidationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -37,23 +38,14 @@ public class ErrorHandler {
                 LocalDateTime.now());
     }
 
-    @ExceptionHandler({CategoryConflictException.class, DuplicationNameException.class, RequestConflictException.class})
+    @ExceptionHandler({CategoryConflictException.class, DuplicationNameException.class,
+            RequestConflictException.class, HttpMessageNotReadableException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleCategoryConflictException(final Exception e) {
         return new ErrorResponse(
                 e.getMessage(),
                 "Conflict request data",
                 HttpStatus.CONFLICT.toString(),
-                LocalDateTime.now());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleThrowable(final Throwable e) {
-        return new ErrorResponse(
-                e.getMessage(),
-                "Server error",
-                HttpStatus.INTERNAL_SERVER_ERROR.toString(),
                 LocalDateTime.now());
     }
 }

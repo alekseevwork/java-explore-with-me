@@ -1,6 +1,5 @@
 package ru.practicum.main_svc.event.controller;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;

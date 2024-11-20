@@ -338,8 +338,7 @@ public class EventServiceImp implements EventService {
     @Override
     public List<ParticipationRequestDto> getEventsRequestByUser(Long userId, Long eventId) {
         eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Событие с таким id: " + eventId + " не найдено"));
-
+                .orElseThrow(() -> new NotFoundException("Event not found"));
         return requestRepository.findAllByInitiatorIdAndEventId(userId, eventId).stream()
                 .map(RequestMapper::toDto)
                 .toList();
@@ -379,7 +378,7 @@ public class EventServiceImp implements EventService {
                     rejectedRequests.add(setStatusAndSaveAll(request, RequestStatus.REJECTED));
                 }
             }
-        } else if (statusUpdateRequest.getStatus() == RequestStatus.REJECTED){
+        } else if (statusUpdateRequest.getStatus() == RequestStatus.REJECTED) {
             for (Request request : updatesRequests) {
                 if (request.getStatus() == RequestStatus.CONFIRMED) {
                     throw new RequestConflictException("State request invalid");

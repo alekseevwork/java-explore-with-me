@@ -88,10 +88,9 @@ public class PrivateEventController {
     public EventRequestStatusUpdateResult updateRequestStatus(
             @PathVariable Long userId,
             @PathVariable Long eventId,
-            @Valid @RequestBody EventRequestStatusUpdateRequest dto) {
+            @RequestBody EventRequestStatusUpdateRequest dto) {
         log.info("PATCH /users/{userId}/events/{eventId}/requests - updateRequestStatus - userId - {}, eventId - {}",
                 userId, eventId);
-        log.info("Status - userId - {}", dto);
         return eventService.updateEventRequestByUser(userId, eventId, dto);
     }
 }

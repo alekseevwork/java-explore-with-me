@@ -36,7 +36,8 @@ public class CompilationServiceImpl implements CompilationService {
 
     @Override
     public CompilationDto getById(long id) {
-        Compilation compilation = compilationRepository.findById(id).orElseThrow();
+        Compilation compilation = compilationRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Compilation not found"));
         return CompilationMapper.toDto(compilation, service);
     }
 
@@ -60,7 +61,7 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     public CompilationDto update(Long compId, UpdateCompilationRequest updateDto) {
         Compilation compilation = compilationRepository.findById(compId)
-                .orElseThrow(() -> new NotFoundException("Подборка событий с id /" + compId + "/ не найдена"));
+                .orElseThrow(() -> new NotFoundException("Compilation not found"));
 
         List<Event> events = eventRepository.findAllByIds(updateDto.getEvents());
 
@@ -69,8 +70,7 @@ public class CompilationServiceImpl implements CompilationService {
         }
         if (updateDto.getTitle() != null) {
             if (compilationRepository.findByTitle(updateDto.getTitle()).isPresent()) {
-                throw new NotFoundException("Подборка событий с названием /" + updateDto.getTitle() +
-                        "/ уже существует");
+                throw new NotFoundException("Compilation by name - " + updateDto.getTitle() + " already exist");
             }
             compilation.setTitle(updateDto.getTitle());
         }

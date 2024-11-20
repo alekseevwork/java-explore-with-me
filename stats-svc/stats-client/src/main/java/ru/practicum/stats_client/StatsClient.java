@@ -43,14 +43,6 @@ public class StatsClient extends BaseClient {
                 "unique", unique,
                 "uris", urisString
         );
-//        if (uris != null && !uris.isEmpty()) {
-//            String urisString = String.join(",", uris);
-//            parameters.put("uris", urisString);
-//            System.out.println(parameters);
-//            return get("/stats?start={start}&end={end}&uris={uris}&unique={unique}", parameters);
-//        }
-//
-//        return get("/stats?start={start}&end={end}&unique={unique}", parameters);
         return get("/stats?start={start}&end={end}&uris={uris}&unique={unique}", parameters);
     }
 }

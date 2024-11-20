@@ -21,7 +21,6 @@ public class CompilationMapper {
         if (compilation == null) {
             return null;
         }
-        System.out.println("Compilation to Dto");
         return new CompilationDto(
                 compilation.getId(),
                 compilation.getEvents().stream().map(event -> EventMapper.toShortDto(event, service)).toList(),
