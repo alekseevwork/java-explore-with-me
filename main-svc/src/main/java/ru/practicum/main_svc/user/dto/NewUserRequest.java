@@ -6,14 +6,14 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class NewUserRequest{
+public class NewUserRequest {
 
-        @NotBlank
-        @Email
-        @Size(min = 6, max = 254)
-        private String email;
+    @NotBlank
+    @Email
+    @Size(min = 6, max = 254)
+    private String email;
 
-        @NotBlank
-        @Size(min = 2, max = 250)
-        private String name;
+    @NotBlank
+    @Size(min = 2, max = 250)
+    private String name;
 }

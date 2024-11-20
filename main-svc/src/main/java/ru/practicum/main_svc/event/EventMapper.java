@@ -6,7 +6,6 @@ import ru.practicum.main_svc.event.dto.EventFullDto;
 import ru.practicum.main_svc.event.dto.EventShortDto;
 import ru.practicum.main_svc.event.dto.NewEventDto;
 import ru.practicum.main_svc.request.RequestRepository;
-import ru.practicum.main_svc.request.RequestStatus;
 import ru.practicum.main_svc.user.UserMapper;
 
 import java.time.LocalDateTime;

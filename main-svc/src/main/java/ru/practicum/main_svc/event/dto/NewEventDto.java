@@ -1,17 +1,13 @@
 package ru.practicum.main_svc.event.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Embedded;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
 import ru.practicum.main_svc.event.Location;
-
-import java.time.LocalDateTime;
 
 @Data
 @Builder

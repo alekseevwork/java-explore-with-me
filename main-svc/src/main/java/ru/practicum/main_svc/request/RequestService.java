@@ -1,7 +1,5 @@
 package ru.practicum.main_svc.request;
 
-import ru.practicum.main_svc.request.dto.EventRequestStatusUpdateRequest;
-import ru.practicum.main_svc.request.dto.EventRequestStatusUpdateResult;
 import ru.practicum.main_svc.request.dto.ParticipationRequestDto;
 
 import java.util.List;
