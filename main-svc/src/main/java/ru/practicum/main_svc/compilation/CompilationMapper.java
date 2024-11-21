@@ -1,10 +1,11 @@
 package ru.practicum.main_svc.compilation;
 
+import lombok.experimental.UtilityClass;
 import ru.practicum.main_svc.compilation.dto.CompilationDto;
 import ru.practicum.main_svc.compilation.dto.NewCompilationDto;
 import ru.practicum.main_svc.event.EventMapper;
 import ru.practicum.main_svc.event.EventService;
-
+@UtilityClass
 public class CompilationMapper {
 
     public static Compilation toCompilation(NewCompilationDto dto) {

@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@Transactional
+@Transactional(readOnly = true)
 public class RequestServiceImp implements RequestService {
 
     private final RequestRepository requestRepository;
@@ -28,12 +28,12 @@ public class RequestServiceImp implements RequestService {
         this.eventRepository = eventRepository;
     }
 
-    @Transactional(readOnly = true)
     @Override
     public List<ParticipationRequestDto> getAllByUserId(Long userId) {
         return requestRepository.findAllByRequesterId(userId).stream().map(RequestMapper::toDto).toList();
     }
 
+    @Transactional
     @Override
     public ParticipationRequestDto create(Long userId, Long eventId) {
 
@@ -72,6 +72,7 @@ public class RequestServiceImp implements RequestService {
         return RequestMapper.toDto(requestRepository.save(request));
     }
 
+    @Transactional
     @Override
     public ParticipationRequestDto update(Long userId, Long requestId) {
         userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
@@ -81,6 +82,7 @@ public class RequestServiceImp implements RequestService {
         return RequestMapper.toDto(requestRepository.save(request));
     }
 
+    @Transactional
     @Override
     public ParticipationRequestDto cancelRequest(Long userId, Long requestId) {
 

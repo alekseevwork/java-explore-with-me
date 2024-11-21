@@ -45,7 +45,7 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     public CompilationDto create(NewCompilationDto newDto) {
         Compilation newCompilation = CompilationMapper.toCompilation(newDto);
-        List<Event> events = eventRepository.findAllByIds(newDto.getEvents());
+        List<Event> events = eventRepository.findAllByIdIn(newDto.getEvents());
         newCompilation.setEvents(events);
         Compilation compilation = compilationRepository.save(newCompilation);
         return CompilationMapper.toDto(compilation, service);
@@ -63,7 +63,7 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation compilation = compilationRepository.findById(compId)
                 .orElseThrow(() -> new NotFoundException("Compilation not found"));
 
-        List<Event> events = eventRepository.findAllByIds(updateDto.getEvents());
+        List<Event> events = eventRepository.findAllByIdIn(updateDto.getEvents());
 
         if (updateDto.getEvents() != null) {
             compilation.setEvents(events);

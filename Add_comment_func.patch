@@ -1,0 +1,380 @@
+Subject: [PATCH] Add comment func
+---
+Index: main-svc/src/main/java/ru/practicum/mainsvc/comment/CommentService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main-svc/src/main/java/ru/practicum/mainsvc/comment/CommentService.java b/main-svc/src/main/java/ru/practicum/mainsvc/comment/CommentService.java
+new file mode 100644
+--- /dev/null	(date 1732108444451)
++++ b/main-svc/src/main/java/ru/practicum/mainsvc/comment/CommentService.java	(date 1732108444451)
+@@ -0,0 +1,21 @@
++package ru.practicum.mainsvc.comment;
++
++import org.springframework.stereotype.Service;
++
++import java.util.List;
++
++@Service
++public interface CommentService {
++
++    CommentDto create(Long userId, Long evenId, RequestCommentDto dto);
++
++    CommentDto update(Long userId, Long evenId, RequestCommentDto dto);
++
++    CommentDto getById(Long commentId);
++
++    List<CommentDto> getAllByUserId(Long userId, int from, int size);
++
++    List<CommentDto> getAllByEventId(Long eventId, int from, int size);
++
++    void delete(Long userId, Long commentId);
++}
+Index: main-svc/src/main/java/ru/practicum/mainsvc/comment/CommentRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main-svc/src/main/java/ru/practicum/mainsvc/comment/CommentRepository.java b/main-svc/src/main/java/ru/practicum/mainsvc/comment/CommentRepository.java
+new file mode 100644
+--- /dev/null	(date 1732107414402)
++++ b/main-svc/src/main/java/ru/practicum/mainsvc/comment/CommentRepository.java	(date 1732107414402)
+@@ -0,0 +1,16 @@
++package ru.practicum.mainsvc.comment;
++
++import org.springframework.data.domain.PageRequest;
++import org.springframework.data.jpa.repository.JpaRepository;
++
++import java.util.List;
++import java.util.Optional;
++
++public interface CommentRepository extends JpaRepository<Comment, Long> {
++
++    List<Comment> findAllByAuthorId(Long userId, PageRequest pageRange);
++
++    List<Comment> findAllByEventId(Long eventId, PageRequest pageRange);
++
++    Optional<Comment> findByAuthorIdAndEventId(Long userId, Long eventId);
++}
+Index: main-svc/src/main/java/ru/practicum/mainsvc/comment/Comment.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main-svc/src/main/java/ru/practicum/mainsvc/comment/Comment.java b/main-svc/src/main/java/ru/practicum/mainsvc/comment/Comment.java
+new file mode 100644
+--- /dev/null	(date 1732105593083)
++++ b/main-svc/src/main/java/ru/practicum/mainsvc/comment/Comment.java	(date 1732105593083)
+@@ -0,0 +1,41 @@
++package ru.practicum.mainsvc.comment;
++
++import com.fasterxml.jackson.annotation.JsonFormat;
++import jakarta.persistence.Entity;
++import jakarta.persistence.GeneratedValue;
++import jakarta.persistence.GenerationType;
++import jakarta.persistence.Id;
++import jakarta.persistence.Table;
++import jakarta.validation.constraints.NotBlank;
++import jakarta.validation.constraints.NotNull;
++import jdk.jfr.Timestamp;
++import lombok.AllArgsConstructor;
++import lombok.Builder;
++import lombok.Data;
++import lombok.NoArgsConstructor;
++
++import java.time.LocalDateTime;
++
++@Entity
++@Data
++@Builder
++@Table(name = "comments")
++@NoArgsConstructor
++@AllArgsConstructor
++public class Comment {
++
++    @Id
++    @GeneratedValue(strategy = GenerationType.IDENTITY)
++    private Long id;
++
++    @NotBlank
++    private String text;
++
++    @Timestamp
++    @NotNull
++    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
++    private LocalDateTime created;
++
++    private Long author;
++    private Long event;
++}
+\ No newline at end of file
+Index: main-svc/src/main/java/ru/practicum/mainsvc/comment/CommentMapper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main-svc/src/main/java/ru/practicum/mainsvc/comment/CommentMapper.java b/main-svc/src/main/java/ru/practicum/mainsvc/comment/CommentMapper.java
+new file mode 100644
+--- /dev/null	(date 1732105981271)
++++ b/main-svc/src/main/java/ru/practicum/mainsvc/comment/CommentMapper.java	(date 1732105981271)
+@@ -0,0 +1,26 @@
++package ru.practicum.mainsvc.comment;
++
++public class CommentMapper {
++
++    public static Comment toComment(RequestCommentDto dto) {
++        if (dto == null) {
++            return null;
++        }
++        return Comment.builder()
++                .text(dto.getText())
++                .build();
++    }
++
++    public static CommentDto toDto(Comment comment) {
++        if (comment == null) {
++            return null;
++        }
++        return CommentDto.builder()
++                .id(comment.getId())
++                .text(comment.getText())
++                .createdOn(comment.getCreated())
++                .author(comment.getAuthor())
++                .event(comment.getEvent())
++                .build();
++    }
++}
+Index: main-svc/src/main/java/ru/practicum/mainsvc/comment/RequestCommentDto.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main-svc/src/main/java/ru/practicum/mainsvc/comment/RequestCommentDto.java b/main-svc/src/main/java/ru/practicum/mainsvc/comment/RequestCommentDto.java
+new file mode 100644
+--- /dev/null	(date 1732105112008)
++++ b/main-svc/src/main/java/ru/practicum/mainsvc/comment/RequestCommentDto.java	(date 1732105112008)
+@@ -0,0 +1,18 @@
++package ru.practicum.mainsvc.comment;
++
++import jakarta.validation.constraints.NotBlank;
++import lombok.AllArgsConstructor;
++import lombok.Builder;
++import lombok.Data;
++import lombok.NoArgsConstructor;
++
++@Data
++@NoArgsConstructor
++@AllArgsConstructor
++@Builder
++public class RequestCommentDto {
++
++    @NotBlank
++    private String text;
++
++}
+\ No newline at end of file
+Index: main-svc/src/main/java/ru/practicum/mainsvc/comment/CommentDto.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main-svc/src/main/java/ru/practicum/mainsvc/comment/CommentDto.java b/main-svc/src/main/java/ru/practicum/mainsvc/comment/CommentDto.java
+new file mode 100644
+--- /dev/null	(date 1732105875853)
++++ b/main-svc/src/main/java/ru/practicum/mainsvc/comment/CommentDto.java	(date 1732105875853)
+@@ -0,0 +1,20 @@
++package ru.practicum.mainsvc.comment;
++
++import com.fasterxml.jackson.annotation.JsonFormat;
++import lombok.Builder;
++import lombok.Data;
++
++import java.time.LocalDateTime;
++
++@Data
++@Builder
++public class CommentDto {
++
++    Long id;
++    String text;
++    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern =  "yyyy-MM-dd HH:mm:ss")
++    LocalDateTime createdOn;
++
++    Long author;
++    Long event;
++}
+Index: main-svc/src/main/java/ru/practicum/mainsvc/comment/CommentController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main-svc/src/main/java/ru/practicum/mainsvc/comment/CommentController.java b/main-svc/src/main/java/ru/practicum/mainsvc/comment/CommentController.java
+new file mode 100644
+--- /dev/null	(date 1732108579001)
++++ b/main-svc/src/main/java/ru/practicum/mainsvc/comment/CommentController.java	(date 1732108579001)
+@@ -0,0 +1,80 @@
++package ru.practicum.mainsvc.comment;
++
++import jakarta.validation.Valid;
++import jakarta.validation.constraints.Positive;
++import jakarta.validation.constraints.PositiveOrZero;
++import lombok.Data;
++import lombok.extern.slf4j.Slf4j;
++import org.springframework.http.HttpStatus;
++import org.springframework.web.bind.annotation.*;
++
++import java.util.List;
++
++@Slf4j
++@Data
++@RestController
++@RequestMapping("/users/{userId}/events")
++public class CommentController {
++
++    private final CommentService commentService;
++
++    @PostMapping("/{eventId}/comments")
++    @ResponseStatus(HttpStatus.CREATED)
++    public CommentDto createComment(
++            @PathVariable Long userId,
++            @PathVariable Long eventId,
++            @RequestBody @Valid RequestCommentDto dto) {
++        log.info("POST comments/ create: {}", dto);
++        return commentService.create(userId, eventId, dto);
++    }
++
++    @PatchMapping("/{eventId}/comments")
++    @ResponseStatus(HttpStatus.OK)
++    public CommentDto updateComment(
++            @PathVariable Long userId,
++            @PathVariable Long eventId,
++            @RequestBody @Valid RequestCommentDto dto) {
++        log.info("PATCH comments/ updated: {}", dto);
++        return commentService.update(userId, eventId, dto);
++    }
++
++    @GetMapping("/{eventId}/comments/{commentId}")
++    @ResponseStatus(HttpStatus.OK)
++    public void getCommentById(
++            @PathVariable Long commentId) {
++        log.info("GET comments/ getById: commentId = {}", commentId);
++        commentService.getById(commentId);
++    }
++
++    @DeleteMapping("/{eventId}/comments/{commentId}")
++    @ResponseStatus(HttpStatus.NO_CONTENT)
++    public void deleteCommentById(
++            @PathVariable Long userId,
++            @PathVariable Long commentId) {
++        log.info("DELETE comments/ deleted: userId = {}, commentId = {}", userId, commentId);
++        commentService.delete(userId, commentId);
++    }
++
++    @GetMapping("/comments")
++    @ResponseStatus(HttpStatus.OK)
++    public List<CommentDto> getUserComments(
++            @PathVariable Long userId,
++            @RequestParam(defaultValue = "0") @PositiveOrZero int from,
++            @RequestParam(defaultValue = "10") @Positive int size) {
++
++        log.info("GET commentsUser/ by userId - {}", userId);
++        return commentService.getAllByUserId(userId, from, size);
++    }
++
++    @GetMapping("/comments")
++    @ResponseStatus(HttpStatus.OK)
++    public List<CommentDto> getEventComments(
++            @PathVariable Long eventId,
++            @RequestParam(defaultValue = "0") @PositiveOrZero int from,
++            @RequestParam(defaultValue = "10") @Positive int size) {
++
++        log.info("GET commentsUser/ by eventId - {}", eventId);
++        return commentService.getAllByEventId(eventId, from, size);
++    }
++}
++
+Index: main-svc/src/main/java/ru/practicum/mainsvc/comment/CommentServiceImp.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main-svc/src/main/java/ru/practicum/mainsvc/comment/CommentServiceImp.java b/main-svc/src/main/java/ru/practicum/mainsvc/comment/CommentServiceImp.java
+new file mode 100644
+--- /dev/null	(date 1732108444445)
++++ b/main-svc/src/main/java/ru/practicum/mainsvc/comment/CommentServiceImp.java	(date 1732108444445)
+@@ -0,0 +1,74 @@
++package ru.practicum.mainsvc.comment;
++
++import lombok.Data;
++import org.springframework.data.domain.PageRequest;
++import org.springframework.stereotype.Service;
++import org.springframework.transaction.annotation.Transactional;
++
++import java.time.LocalDateTime;
++import java.util.List;
++
++@Data
++@Service
++@Transactional(readOnly = true)
++public class CommentServiceImp implements CommentService {
++
++    private  final CommentRepository commentRepository;
++
++    @Transactional
++    @Override
++    public CommentDto create(Long userId, Long eventId, RequestCommentDto dto) {
++        if (userId == null) {
++            throw new RuntimeException();
++        }
++
++        if (eventId == null) {
++            throw new RuntimeException();
++        }
++        Comment comment = CommentMapper.toComment(dto);
++        comment.setCreated(LocalDateTime.now());
++        comment.setAuthor(userId);
++        comment.setEvent(eventId);
++
++        return CommentMapper.toDto(commentRepository.save(comment));
++    }
++
++    @Transactional
++    @Override
++    public CommentDto update(Long userId, Long eventId, RequestCommentDto dto) {
++
++        Comment comment = commentRepository.findByAuthorIdAndEventId(userId, eventId)
++                .orElseThrow(() -> new RuntimeException("Comment not found"));
++        comment.setCreated(LocalDateTime.now());
++        comment.setText(dto.getText());
++
++        return CommentMapper.toDto(commentRepository.save(comment));
++    }
++
++    @Override
++    public CommentDto getById(Long commentId) {
++        return CommentMapper.toDto(commentRepository.findById(commentId)
++                .orElseThrow(() -> new RuntimeException("Comment not found")));
++    }
++
++    @Override
++    public List<CommentDto> getAllByUserId(Long userId, int from, int size) {
++        return commentRepository.findAllByAuthorId(userId, PageRequest.of(from, size))
++                .stream().map(CommentMapper::toDto).toList();
++    }
++
++    @Override
++    public List<CommentDto> getAllByEventId(Long eventId, int from, int size) {
++        return commentRepository.findAllByEventId(eventId, PageRequest.of(from, size))
++                .stream().map(CommentMapper::toDto).toList();
++    }
++
++    @Transactional
++    @Override
++    public void delete(Long userId, Long commentId) {
++        if (!commentRepository.findById(commentId).orElseThrow().getAuthor().equals(userId)) {
++            throw new RuntimeException("User not author this comment");
++        };
++        commentRepository.deleteById(commentId);
++    }
++}

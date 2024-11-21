@@ -53,7 +53,6 @@ public class EventServiceImp implements EventService {
     private final RequestRepository requestRepository;
     private final StatsClient statsClient;
 
-
     @Override
     public List<EventShortDto> getAllByUser(Long userId, int from, int size) {
         return eventRepository.findAllByInitiatorId(userId, PageRequest.of(from, size)).stream()

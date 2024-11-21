@@ -1,7 +1,9 @@
 package ru.practicum.main_svc.request;
 
+import lombok.experimental.UtilityClass;
 import ru.practicum.main_svc.request.dto.ParticipationRequestDto;
 
+@UtilityClass
 public class RequestMapper {
 
     public static ParticipationRequestDto toDto(Request request) {
