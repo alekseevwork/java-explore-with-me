@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS categories CASCADE;
 DROP TABLE IF EXISTS compilations CASCADE;
 DROP TABLE IF EXISTS events CASCADE;
 DROP TABLE IF EXISTS requests CASCADE;
+DROP TABLE IF EXISTS comments CASCADE;
 DROP TABLE IF EXISTS compilations_events CASCADE;
 
 CREATE TABLE IF NOT EXISTS categories (
@@ -51,4 +52,13 @@ CREATE TABLE IF NOT EXISTS requests (
 create TABLE IF NOT EXISTS compilations_events (
     compilation_id BIGINT NOT NULL REFERENCES compilations(id) ON DELETE CASCADE,
     event_id       BIGINT NOT NULL REFERENCES events(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS comments (
+    id           BIGSERIAL PRIMARY KEY,
+    text         VARCHAR(2000) NOT NULL,
+    created      TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    update_at     TIMESTAMP WITHOUT TIME ZONE,
+    author_id    BIGINT    NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    event_id     BIGINT    NOT NULL REFERENCES events(id) ON DELETE CASCADE
 );
