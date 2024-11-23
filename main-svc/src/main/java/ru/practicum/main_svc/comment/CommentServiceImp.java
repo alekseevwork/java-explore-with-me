@@ -22,9 +22,9 @@ import java.util.Objects;
 @Transactional(readOnly = true)
 public class CommentServiceImp implements CommentService {
 
-    private  final CommentRepository commentRepository;
-    private  final UserRepository userRepository;
-    private  final EventRepository eventRepository;
+    private final CommentRepository commentRepository;
+    private final UserRepository userRepository;
+    private final EventRepository eventRepository;
     private final EventService eventService;
 
     @Transactional
@@ -91,7 +91,28 @@ public class CommentServiceImp implements CommentService {
                 .orElseThrow(() -> new NotFoundException("Comment by id - " + commentId + " not found"));
         if (!Objects.equals(comment.getAuthor().getId(), userId)) {
             throw new RequestConflictException("User not author this comment");
-        };
+        }
+        commentRepository.deleteById(commentId);
+    }
+
+    @Transactional
+    @Override
+    public CommentDto updateByAdmin(Long commentId, CommentShortDto dto) {
+
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Comment by id - " + commentId + " not found"));
+
+        comment.setUpdateAt(LocalDateTime.now());
+        comment.setText(dto.getText());
+
+        return CommentMapper.toDto(commentRepository.save(comment), eventService);
+    }
+
+    @Transactional
+    @Override
+    public void deleteAdminById(Long commentId) {
+        commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Comment by id - " + commentId + " not found"));
         commentRepository.deleteById(commentId);
     }
 }

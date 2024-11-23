@@ -11,6 +11,8 @@ public interface CommentService {
 
     CommentDto update(Long userId, Long evenId, CommentShortDto dto);
 
+    CommentDto updateByAdmin(Long evenId, CommentShortDto dto);
+
     CommentDto getById(Long commentId);
 
     List<CommentShortDto> getAllByUserId(Long userId, int from, int size);
@@ -18,4 +20,6 @@ public interface CommentService {
     List<CommentShortDto> getAllByEventId(Long eventId, int from, int size);
 
     void deleteById(Long userId, Long commentId);
+
+    void deleteAdminById(Long commentId);
 }
